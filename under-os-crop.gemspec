@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |gem|
-  gem.name          = "under-os-image"
+  gem.name          = "under-os-crop"
   gem.version       = '0.0.0'
 
   gem.authors       = ["Nikolay Nemshilov"]
