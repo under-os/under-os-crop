@@ -1,0 +1,2 @@
+$stylesheets ||= []
+$stylesheets << "crop.css"

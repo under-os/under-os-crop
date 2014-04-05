@@ -1,37 +1,24 @@
 #
 # An image crop UI
 #
-class UnderOs
+module UnderOs
   class Crop < UnderOs::UI::View
+    tag :crop
 
-    attr_reader :ratio
+    attr_reader :ratio, :image
 
     def initialize(options={})
-      super class: 'cropper'
+      super options.merge(class: 'crop')
 
-      UnderOs::App.history.current_page.stylesheet.load "cropper.css"
-
-      append @window         = Window.new
-      append @overlay_top    = Overlay.new
-      append @overlay_left   = Overlay.new
-      append @overlay_right  = Overlay.new
-      append @overlay_bottom = Overlay.new
-
-      self.ratio = nil # free-form
-
-      on :touchstart, :save_position
-      on :touchmove,  :move_window
-
-      UnderOs::App.history.current_page.view.on(:touchend) { stop_resize }
-    end
-
-    def original_image
-      parent._.image if parent.is_a?(UOS::UI::Image)
+      append @scroll   = Scroll.new
+      # append @window   = Window.new
+      # append @overlay1 = Overlay.new
+      # append @overlay2 = Overlay.new
     end
 
     def ratio=(ratio)
       ratio = ratio.to_s
-      ratio = "#{original_image.size.width}:#{original_image.size.height}" if ratio == 'true'
+      ratio = "#{@original.size.width}:#{@original.size.height}" if ratio == 'true'
 
       if m = ratio.match(/^([\d\.+]+):([\d\.]+)$/)
         @ratio = m[1].to_f / m[2].to_f
@@ -39,54 +26,31 @@ class UnderOs
         @ratio = nil
       end
 
-      expand
+      reset
     end
 
-    def repaint(*args)
-      super *args
-      expand
-      self
+    def src
+      #puts @scroll.image_rect
+      # render and return
+      @original
     end
 
-    def expand
-      return if size.x == 0 || ! @window # not initialized yet
-
-      @calculator = Calculator.new(self)
-
-      reposition *@calculator.max_window_frame
+    def src=(image)
+      @original = image
+      reset
     end
 
-    def reposition(width, height, x, y)
-      @window.reposition(width, height, x, y)
-      resize_overlays(width, height, x, y)
+    def reset
+      @scroll.image = @original
+      @processor = Processor.new(@original)
     end
 
-    def resize_overlays(width, height, x, y)
-      @overlay_top._.frame    = [[0,0], [size.x, y]]
-      @overlay_left._.frame   = [[0,y], [x, height]]
-      @overlay_right._.frame  = [[x+width, y], [size.x-x-width, height]]
-      @overlay_bottom._.frame = [[0, y+height], [size.x, size.y-y-height]]
+    def turn(angle)
+      @scroll.image = @processor.turn(angle)
     end
 
-    def save_position(event)
-      @directions = event.touches.map do |touch|
-        @window.touch_direction(touch.position)
-      end
-
-      @prev_position = event.touches.map(&:position)
+    def tilt(angle)
+      @scroll.image = @processor.tilt(angle)
     end
-
-    def move_window(event)
-      return if ! @prev_position
-
-      reposition *@calculator.new_window_frame(@prev_position, event.touches.map(&:position), @directions)
-
-      @prev_position = event.touches.map(&:position)
-    end
-
-    def stop_resize
-      @prev_position = nil
-    end
-
   end
 end
