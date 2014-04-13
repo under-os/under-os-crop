@@ -11,9 +11,10 @@ module UnderOs
       super options.merge(class: 'crop')
 
       append @scroll   = Scroll.new
-      # append @window   = Window.new
-      # append @overlay1 = Overlay.new
-      # append @overlay2 = Overlay.new
+      append @window   = Window.new
+
+      @processor = Processor.new
+      self.ratio = nil
     end
 
     def ratio=(ratio)
@@ -26,11 +27,10 @@ module UnderOs
         @ratio = nil
       end
 
-      reset
+      @window.expand @ratio if self.size.x > 0
     end
 
     def src
-      #puts @scroll.image_rect
       # render and return
       @original
     end
@@ -41,8 +41,10 @@ module UnderOs
     end
 
     def reset
-      @scroll.image = @original
-      @processor = Processor.new(@original)
+      @scroll.image    = @original
+      @processor.image = @original
+
+      @window.expand @ratio
     end
 
     def turn(angle)
