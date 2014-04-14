@@ -13,7 +13,7 @@ module UnderOs
       append @scroll   = Scroll.new
       append @window   = Window.new
 
-      @processor = Processor.new
+      @processor = Processor.new(@window)
       self.ratio = nil
     end
 
@@ -30,21 +30,21 @@ module UnderOs
       @window.expand @ratio if self.size.x > 0
     end
 
+    def repaint(*args)
+      super(*args).tap{  @window.expand @ratio if @window }
+    end
+
     def src
-      # render and return
-      @original
+      @processor.render
     end
 
     def src=(image)
-      @original = image
+      @processor.image = image
       reset
     end
 
     def reset
-      @scroll.image    = @original
-      @processor.image = @original
-
-      @window.expand @ratio
+      @scroll.image = @processor.reset
     end
 
     def turn(angle)
@@ -52,7 +52,9 @@ module UnderOs
     end
 
     def tilt(angle)
+      return if @_working; @_working = true
       @scroll.image = @processor.tilt(angle)
+      @_working = false
     end
   end
 end

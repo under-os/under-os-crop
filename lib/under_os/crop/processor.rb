@@ -1,6 +1,7 @@
 class UnderOs::Crop::Processor
 
-  def initialize
+  def initialize(window)
+    @crop_window = window
     @tilt_filter = CIFilter.filterWithName("CIStraightenFilter")
     @turn_filter = CIFilter.filterWithName("CIAffineTransform")
     @crop_filter = CIFilter.filterWithName("CICrop")
@@ -12,30 +13,41 @@ class UnderOs::Crop::Processor
   end
 
   def image=(image)
-    @original = CIImage.alloc.initWithImage(image)
+    @original = image
+  end
+
+  def reset
+    resize(@original).tap do |ui_image|
+      @working = CIImage.alloc.initWithImage(ui_image)
+    end
   end
 
   def turn(angle)
     transform = NSValue.valueWithCGAffineTransform(CGAffineTransformMakeRotation(angle))
     @turn_filter.setValue(transform, forKey:"inputTransform")
-    render(@turn_filter).tap{ |image| self.image = image  }
+    apply(@turn_filter).tap{ |image| @working = CIImage.alloc.initWithImage(image)  }
+    apply(@tilt_filter)
   end
 
   def tilt(angle)
     @tilt_filter.setValue(angle, forKey:"inputAngle")
-    render @tilt_filter
+    apply @tilt_filter
   end
 
   def crop(rect)
     rectangle = CIVector.vectorWithX(rect[0], Y:rect[1], Z:rect[2], W:rect[3])
     @crop_filter.setValue(rectangle, forKey:'inputRectangle')
-    render @crop_filter
+    apply @crop_filter
+  end
+
+  def render
+    @original
   end
 
 protected
 
-  def render(filter)
-    filter.setValue(@original, forKey: 'inputImage')
+  def apply(filter)
+    filter.setValue(@working, forKey: 'inputImage')
 
     image    = filter.outputImage
     cg_image = @context.createCGImage(image, fromRect:image.extent)
@@ -44,5 +56,18 @@ protected
     CGImageRelease(cg_image)
 
     image
+  end
+
+  def resize(image)
+    size      = UOS::Point.new(UOS::Screen.size * 2)
+    ratio     = size.x * 2 / image.size.width
+    new_size  = CGSizeMake(size.x * 2, image.size.height * ratio)
+
+    UIGraphicsBeginImageContext(new_size)
+    image.drawInRect(CGRectMake(0,0,new_size.width,new_size.height))
+    new_image = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+
+    new_image
   end
 end
