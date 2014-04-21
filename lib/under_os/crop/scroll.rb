@@ -28,8 +28,4 @@ class UnderOs::Crop::Scroll < UOS::UI::Scroll
 
     centerContent
   end
-
-  def image_rect
-    @_.contentOffset
-  end
 end

@@ -10,10 +10,10 @@ module UnderOs
     def initialize(options={})
       super options.merge(class: 'crop')
 
-      append @scroll   = Scroll.new
-      append @window   = Window.new
+      append @scroll = Scroll.new
+      append @window = Window.new
 
-      @processor = Processor.new(@window)
+      @processor = Processor.new
       self.ratio = nil
     end
 
@@ -35,26 +35,60 @@ module UnderOs
     end
 
     def src
-      @processor.render
+      @processor.render *original_crop_rectangle
     end
 
     def src=(image)
-      @processor.image = image
+      @processor.image = @original = image
       reset
     end
 
     def reset
-      @scroll.image = @processor.reset
+      render { @processor.reset }
     end
 
     def turn(angle)
-      @scroll.image = @processor.turn(angle)
+      render { @processor.turn(angle) }
     end
 
     def tilt(angle)
+      render { @processor.tilt(angle) }
+    end
+
+  protected
+
+    def render(&block)
       return if @_working; @_working = true
-      @scroll.image = @processor.tilt(angle)
-      @_working = false
+
+      Dispatch::Queue.new("uos.gems.crop.tilt").async do
+        new_image = block.call
+
+        Dispatch::Queue.main.async do
+          @scroll.image = new_image
+          @_working = false
+        end
+      end
+    end
+
+    def original_crop_rectangle
+      content_size    = @scroll.contentSize / @scroll.scale
+      crop_offset     = @scroll.contentOffset / @scroll.scale + @window.position - 1
+      crop_frame      = @window.size / @scroll.scale
+
+      crop_offset.x   = 0 if crop_offset.x < 0 # tall image
+      crop_offset.y   = 0 if crop_offset.y < 0 # wide image
+
+      crop_frame.x    = content_size.x if crop_frame.x > content_size.x
+      crop_frame.y    = content_size.y if crop_frame.y > content_size.y
+
+      original_is_h   = @original.size.width / @original.size.height > 1
+      content_is_h    = content_size.x / content_size.y > 1
+      original_scale  = @original.size.width / content_size.__send__(original_is_h == content_is_h ? :x : :y)
+
+      original_offset = crop_offset * original_scale
+      original_frame  = crop_frame * original_scale
+
+      [original_offset.x, original_offset.y, original_frame.x, original_frame.y]
     end
   end
 end
