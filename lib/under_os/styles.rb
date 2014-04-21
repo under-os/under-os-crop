@@ -1,2 +1,2 @@
 $stylesheets ||= []
-$stylesheets << "crop.css"
+$stylesheets << "uos-crop.css"
