@@ -11,8 +11,14 @@ class UnderOs::Crop::Processor
     end
   end
 
+  def image
+    @original
+  end
+
   def image=(image)
-    resize(@original = image).tap do |ui_image|
+    @original = fix_orientation(image)
+
+    resize(@original).tap do |ui_image|
       @resized_original = ui_image
     end
   end
@@ -69,8 +75,12 @@ protected
     image
   end
 
-  def resize(image)
-    max_width = UOS::Screen.size.x * 4 # double the retina for zoom
+  def fix_orientation(image)
+    resize(image, image.size.width)
+  end
+
+  def resize(image, max_width=nil)
+    max_width ||= UOS::Screen.size.x * 4 # double the retina for zoom
     ratio     = max_width / image.size.width
     new_size  = CGSizeMake(max_width, image.size.height * ratio)
 

@@ -39,7 +39,8 @@ module UnderOs
     end
 
     def src=(image)
-      @processor.image = @original = image
+      @processor.image = image
+      @original = @processor.image # fixed original
       reset
     end
 
