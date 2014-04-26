@@ -37,6 +37,8 @@ class UnderOs::Crop::Processor
   end
 
   def crop(x, y, width, height)
+    img_size  = UIImage.alloc.initWithCIImage(@working).size
+    y         = img_size.height - y - height # this filter counts from the bottom
     rectangle = CIVector.vectorWithX(x, Y:y, Z:width, W:height)
     @crop_filter.setValue(rectangle, forKey:'inputRectangle')
     apply @crop_filter

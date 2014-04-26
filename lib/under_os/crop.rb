@@ -31,7 +31,7 @@ module UnderOs
     end
 
     def repaint(*args)
-      super(*args).tap{  @window.expand @ratio if @window }
+      super(*args).tap{ @window.expand @ratio if @window }
     end
 
     def src
@@ -72,7 +72,7 @@ module UnderOs
 
     def original_crop_rectangle
       content_size    = @scroll.contentSize / @scroll.scale
-      crop_offset     = @scroll.contentOffset / @scroll.scale + @window.position - 1
+      crop_offset     = @scroll.contentOffset / @scroll.scale + @window.position / 2 + 1
       crop_frame      = @window.size / @scroll.scale
 
       crop_offset.x   = 0 if crop_offset.x < 0 # tall image
