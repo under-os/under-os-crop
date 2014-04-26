@@ -44,6 +44,7 @@ module UnderOs
     end
 
     def reset
+      @scroll.resetting!
       render { @processor.reset }
     end
 

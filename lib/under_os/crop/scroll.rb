@@ -18,14 +18,18 @@ class UnderOs::Crop::Scroll < UOS::UI::Scroll
 
   def image=(src)
     @image.src = src
-    self.scale = 1.0
+    self.scale = 1.0 and @resetting = nil if @resetting
 
     scale      = [self.size.x / src.size.width, self.size.y / src.size.height].min
-    @new_size  = {x: src.size.width * scale, y: src.size.height * scale}
+    @new_size  = {x: src.size.width * scale * self.scale, y: src.size.height * scale * self.scale}
 
     @image.size      = @new_size
     self.contentSize = @new_size
 
     centerContent
+  end
+
+  def resetting!
+    @resetting = true
   end
 end
