@@ -15,6 +15,5 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
 
   gem.add_runtime_dependency 'under-os-ui'
-  gem.add_development_dependency 'rake'
 
 end

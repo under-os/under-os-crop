@@ -1,4 +1,5 @@
-class UnderOs::Crop::Scroll < UOS::UI::Scroll
+class UnderOs::Crop < UnderOs::UI::View
+class Scroll < UOS::UI::Scroll
   attr_reader :image
 
   def initialize(options={})
@@ -32,4 +33,5 @@ class UnderOs::Crop::Scroll < UOS::UI::Scroll
   def resetting!
     @resetting = true
   end
+end
 end
