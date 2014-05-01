@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = "under-os-crop"
-  gem.version       = '0.0.0'
+  gem.version       = '1.0.0'
 
   gem.authors       = ["Nikolay Nemshilov"]
   gem.email         = ['nemshilov@gmail.com']
